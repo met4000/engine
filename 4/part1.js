@@ -91,17 +91,163 @@ document.body.innerText
 // remove leftover numbers and the extra bars
 .replace(/^.*?\|(\|*).*$/gm, "$1")
 
-// calculate the score (2 ** (num bars - 1))
-.replace(/\|$/gm, "!")
+// calculate the scores (2 ** (num bars - 1))
+.replace(/^$/gm, "0")
+.replace(/\|$/gm, "*1")
+.replace(/\|/gm, "*2")
+.replace(/^\*/gm, "")
+
+// a * b * c -> (a * b) and (a * b) * c -> ((a * b) * c)
+.replace(/^(\d+)\*(\d+)/gm, "($1*$2)")
 .repeatReplace(v => v
-	.replace(/\|(!+)/gm, "$1$1")
+	.replace(/^(.+\))\*(\d+)(\*|$)/gm, "($1*$2)$3")
 )
 
-// add the scores together
-.replace(/\n/g, "")
-.replace(/^$/g, "0")
+// multiply
 .repeatReplace(v => v
-	.replace(/^!/g, "1")
-	.replaceTemplate(templateRegExp`/(${n => n})!/g`, template`${n => n + 1}`, range(0, 8))
-	.replace(/9!/g, "!0")
+	// a * b -> a + a + a + ...
+	.repeatReplace(v => v
+		// a * bc -> a * b0 + a * c
+		.repeatReplace(v => v
+			.replace(/(\d+)\*(\d+)([1-9])(0*)/gm, "$1*$20$4+$1*$3$4")
+		)
+
+		// a * b00 -> a * (b-1)99 + a
+		.repeatReplace(v => v
+			// has to be done in order, so that it doesn't go 30 -> 2|0 -> 1|0
+			.replace(/(\d+)\*(1)(0*)/gm, "$1*|$3+$1")
+			.replace(/(\d+)\*(2)(0*)/gm, "$1*1|$3+$1")
+			.replace(/(\d+)\*(3)(0*)/gm, "$1*2|$3+$1")
+			.replace(/(\d+)\*(4)(0*)/gm, "$1*3|$3+$1")
+			.replace(/(\d+)\*(5)(0*)/gm, "$1*4|$3+$1")
+			.replace(/(\d+)\*(6)(0*)/gm, "$1*5|$3+$1")
+			.replace(/(\d+)\*(7)(0*)/gm, "$1*6|$3+$1")
+			.replace(/(\d+)\*(8)(0*)/gm, "$1*7|$3+$1")
+			.replace(/(\d+)\*(9)(0*)/gm, "$1*8|$3+$1")
+
+			// replace trailing 0s with 9s (from underflows)
+			.repeatReplace(v => v
+				.replace(/(\d*)\|(0)/gm, "$19|")
+			)
+			.replace(/(\d+)\|/gm, "$1")
+			.replace(/\d+\*\|\+/gm, "")
+		)
+	)
+
+
+	// add
+
+	// ab -> a0 + b
+	.repeatReplace(v => v
+		.replace(/\b(\d+?)([1-9])(0*)\b/gm, "$10$3+$2$3")
+	)
+
+	// b + a0 -> a0 + b
+	.repeatReplace(v => v
+		.replace(/\b(\d)(0*)\+(\d)(0+)\2\b/gm, "$3$4$2+$1$2")
+	)
+
+	// sort; 10 + 20 -> 20 + 10
+	.repeatReplace(v => v
+		.replaceTemplate(templateRegExp`/\b(${n => n})(0*)\+([${n => n + 1}-9])\2\b/gm`, "$3$2+$1$2", range(1, 8))
+	)
+
+	// add
+	.repeatReplace(v => v
+		// 80 + 40 = 100 + 20
+
+		.replaceTemplate(templateRegExp`/\b9(0*)\+${n => n}\1\b/gm`, template`10$1+${n => n - 1}$1`, range(2, 9))
+		.replace(/\b9(0*)\+1\1\b/gm, "10$1")
+
+		.replaceTemplate(templateRegExp`/\b8(0*)\+${n => n}\1\b/gm`, template`10$1+${n => n - 2}$1`, range(3, 8))
+		.replaceTemplate(templateRegExp`/\b8(0*)\+${n => n}\1\b/gm`, template`${n => 8 + n}$1`, range(1, 2))
+
+		.replaceTemplate(templateRegExp`/\b7(0*)\+${n => n}\1\b/gm`, template`10$1+${n => n - 3}$1`, range(4, 7))
+		.replaceTemplate(templateRegExp`/\b7(0*)\+${n => n}\1\b/gm`, template`${n => 7 + n}$1`, range(1, 3))
+
+		.replaceTemplate(templateRegExp`/\b6(0*)\+${n => n}\1\b/gm`, template`10$1+${n => n - 4}$1`, range(5, 6))
+		.replaceTemplate(templateRegExp`/\b6(0*)\+${n => n}\1\b/gm`, template`${n => 6 + n}$1`, range(1, 4))
+
+		.replaceTemplate(templateRegExp`/\b5(0*)\+${n => n}\1\b/gm`, template`${n => 5 + n}$1`, range(1, 5))
+		.replaceTemplate(templateRegExp`/\b4(0*)\+${n => n}\1\b/gm`, template`${n => 4 + n}$1`, range(1, 4))
+		.replaceTemplate(templateRegExp`/\b3(0*)\+${n => n}\1\b/gm`, template`${n => 3 + n}$1`, range(1, 3))
+		.replaceTemplate(templateRegExp`/\b2(0*)\+${n => n}\1\b/gm`, template`${n => 2 + n}$1`, range(1, 2))
+		.replace(/\b1(0*)\+1\1\b/gm, "2$1")
+
+		// sort by length
+		.repeatReplace(v => v
+			.replace(/\b(\d)(0*)\+(\d)(0+)\2\b/gm, "$3$4$2+$1$2")
+		)
+
+		// sort by number
+		.repeatReplace(v => v
+			.replaceTemplate(templateRegExp`/\b(${n => n})(0*)\+([${n => n + 1}-9])\2\b/gm`, "$3$2+$1$2", range(1, 8))
+		)
+	)
+
+	// a0 + b -> ab
+	.repeatReplace(v => v
+		.replace(/\b(\d+?)0(0*?)(0*)\+(\d\3)\b/m, "$1$2$4")
+	)
+
+	// (a) -> a
+	.replace(/\((\d*)\)/gm, "$1")
+)
+
+.replace(/\n/g, "+")
+.replace(/\+0\b/g, "")
+
+// add
+
+// ab -> a0 + b
+.repeatReplace(v => v
+	.replace(/\b(\d+?)([1-9])(0*)\b/gm, "$10$3+$2$3")
+)
+
+// b + a0 -> a0 + b
+.repeatReplace(v => v
+	.replace(/\b(\d)(0*)\+(\d)(0+)\2\b/gm, "$3$4$2+$1$2")
+)
+
+// sort; 10 + 20 -> 20 + 10
+.repeatReplace(v => v
+	.replaceTemplate(templateRegExp`/\b(${n => n})(0*)\+([${n => n + 1}-9])\2\b/gm`, "$3$2+$1$2", range(1, 8))
+)
+
+// add
+.repeatReplace(v => v
+	// 80 + 40 = 100 + 20
+
+	.replaceTemplate(templateRegExp`/\b9(0*)\+${n => n}\1\b/gm`, template`10$1+${n => n - 1}$1`, range(2, 9))
+	.replace(/\b9(0*)\+1\1\b/gm, "10$1")
+
+	.replaceTemplate(templateRegExp`/\b8(0*)\+${n => n}\1\b/gm`, template`10$1+${n => n - 2}$1`, range(3, 8))
+	.replaceTemplate(templateRegExp`/\b8(0*)\+${n => n}\1\b/gm`, template`${n => 8 + n}$1`, range(1, 2))
+
+	.replaceTemplate(templateRegExp`/\b7(0*)\+${n => n}\1\b/gm`, template`10$1+${n => n - 3}$1`, range(4, 7))
+	.replaceTemplate(templateRegExp`/\b7(0*)\+${n => n}\1\b/gm`, template`${n => 7 + n}$1`, range(1, 3))
+
+	.replaceTemplate(templateRegExp`/\b6(0*)\+${n => n}\1\b/gm`, template`10$1+${n => n - 4}$1`, range(5, 6))
+	.replaceTemplate(templateRegExp`/\b6(0*)\+${n => n}\1\b/gm`, template`${n => 6 + n}$1`, range(1, 4))
+
+	.replaceTemplate(templateRegExp`/\b5(0*)\+${n => n}\1\b/gm`, template`${n => 5 + n}$1`, range(1, 5))
+	.replaceTemplate(templateRegExp`/\b4(0*)\+${n => n}\1\b/gm`, template`${n => 4 + n}$1`, range(1, 4))
+	.replaceTemplate(templateRegExp`/\b3(0*)\+${n => n}\1\b/gm`, template`${n => 3 + n}$1`, range(1, 3))
+	.replaceTemplate(templateRegExp`/\b2(0*)\+${n => n}\1\b/gm`, template`${n => 2 + n}$1`, range(1, 2))
+	.replace(/\b1(0*)\+1\1\b/gm, "2$1")
+
+	// sort by length
+	.repeatReplace(v => v
+		.replace(/\b(\d)(0*)\+(\d)(0+)\2\b/gm, "$3$4$2+$1$2")
+	)
+
+	// sort by number
+	.repeatReplace(v => v
+		.replaceTemplate(templateRegExp`/\b(${n => n})(0*)\+([${n => n + 1}-9])\2\b/gm`, "$3$2+$1$2", range(1, 8))
+	)
+)
+
+// a0 + b -> ab
+.repeatReplace(v => v
+	.replace(/\b(\d+?)0(0*?)(0*)\+(\d\3)\b/m, "$1$2$4")
 )
