@@ -214,7 +214,8 @@ String.prototype.r_add_sub = function () { return this
     // convert to tokens; 30 -> |||!0
     .replace(/([+-])(\d)(0*)/g, "$1$2!$3")
     .replaceTemplate(templateRegExp`/([+-])${n => n}(\|*!0*)/g`, template`$1${n => n - 1}|$2`, range(9, 2))
-    .replace(/([+-])1(\|*0*)/g, "$1|$2")
+    .replace(/([+-])1(\|*!0*)/g, "$1|$2")
+    .replace(/([+-])0!/g, "")
 
     .repeatReplace(v => v
       .repeatReplace(v => v
@@ -294,7 +295,7 @@ String.prototype.r_lt = function (paramRegex = /\(([+-]?\d+)<([+-]?\d+)\)/g, tru
 
 // assumes positive integer
 // evaluates addition
-// TODO optimise to use an addition op rather than what the current r_add is
+// TODO use an optimised addition op rather than what the current r_add is (i.e. optimise r_add)
 String.prototype.r_isqrt = function (paramRegex = /\(isqrt:(\d+)\)/g, outFormat = "($1)") { return this
   .replace(paramRegex, "(isqrt:$1)")
   
@@ -309,7 +310,7 @@ String.prototype.r_isqrt = function (paramRegex = /\(isqrt:(\d+)\)/g, outFormat 
     
     // a += d, d += 2, L += 1
     .replace(/\(isqrt:(\d+):(\d+),(\d+),(\d+)\)/g, "(isqrt:$1:($2+$3),($3+2),($4+1))")
-    .r_add()
+    .r_add_sub()
   )
 
   .replace(/\(isqrt:(\d+)\)/, outFormat)
