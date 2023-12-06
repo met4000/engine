@@ -122,6 +122,7 @@ String.prototype.r_add = function () { return this
 	)
 };
 
+// assumes positive integers
 // operates on /(\d+)\*(\d+)/, uses /[!|]/ with multiplied numbers
 // evaluates parentheses, evaluates addition
 String.prototype.r_mult = function () { return this
@@ -140,14 +141,7 @@ String.prototype.r_mult = function () { return this
 	
 	// sort from highest to lowest, using just the first digit (will make it somewhat faster when multiplying)
 	.repeatReplace(v => v
-		.replace(/(1)(\d*)(!+)\*([2-9])(\d*)\3(\*|$)/gm, "$4$5$3*$1$2$3$6")
-		.replace(/(2)(\d*)(!+)\*([3-9])(\d*)\3(\*|$)/gm, "$4$5$3*$1$2$3$6")
-		.replace(/(3)(\d*)(!+)\*([4-9])(\d*)\3(\*|$)/gm, "$4$5$3*$1$2$3$6")
-		.replace(/(4)(\d*)(!+)\*([5-9])(\d*)\3(\*|$)/gm, "$4$5$3*$1$2$3$6")
-		.replace(/(5)(\d*)(!+)\*([6-9])(\d*)\3(\*|$)/gm, "$4$5$3*$1$2$3$6")
-		.replace(/(6)(\d*)(!+)\*([7-9])(\d*)\3(\*|$)/gm, "$4$5$3*$1$2$3$6")
-		.replace(/(7)(\d*)(!+)\*([8-9])(\d*)\3(\*|$)/gm, "$4$5$3*$1$2$3$6")
-		.replace(/(8)(\d*)(!+)\*([9-9])(\d*)\3(\*|$)/gm, "$4$5$3*$1$2$3$6")
+		.replaceTemplate(templateRegExp`/(${n => n})(\d*)(!+)\*([${n => n + 1}-9])(\d*)\3(\*|$)/gm`, "$4$5$3*$1$2$3$6", range(1, 8))
 	)
 	.replace(/(\d+)!+/gm, "$1")
 
@@ -188,3 +182,110 @@ String.prototype.r_mult = function () { return this
 		)
 	)
 };
+
+// operates on /(\d+)-(\d+)/, uses /[!]/ with added/subtracted numbers
+// evaluates parentheses, evaluates addition
+String.prototype.r_sub = function () { return this
+	// (a) -> a
+	.repeatReplace(v => v
+		.replace(/\((\d+)\)/g, "$1")
+	)
+
+	// a - b - c -> a - (b + c) -> a - d
+	.repeatReplace(v => v
+		.replace(/(^|[^-])\b(\d+)(?:-\(([\d\+]+)\))?-(\d+)/g, "$1$2-($3+$4)")
+		.replace(/(^|[^-])\b(\d+)-\(\+([\d\+]+)\)/g, "$1$2-($3)")
+		.r_add()
+	)
+
+	.replace(/(^|[^-])\b(\d+)-(\d+)/g, "$1(sub:+$2-$3)")
+
+	// split, preserving sign
+	.repeatReplace(v => v
+		.replace(/([\+-])(\d+?)([1-9])(0*)\b/g, "$1$20$4$1$3$4")
+	)
+
+	// sort by length, preserving sign, subtraction before addition
+	.repeatReplace(v => v
+		.replace(/([\+-])(\d)(0*)([\+-])(\d)(0+)\3\b|(\+)(\d)(0*)(-)(\d)\9\b/g, "$4$5$6$3$10$11$9$1$2$3$7$8$9")
+	)
+
+	
+
+	// // if the result will be negative, flip the signs; (sub:a-b) -> -(sub:b-a)
+	// .replace(/\(sub:-/g, "-(sub:-!")
+	// .repeatReplace(v => v
+	// 	.replace(/-!(\d+)(?:([\+-])(\d+))?/g, "+$1$2!$3")
+	// 	.replace(/\+!(\d+)(?:([\+-])(\d+))?/g, "-$1$2!$3")
+	// )
+	// .replace(/(\d+)!/g, "$1")
+
+	// // sort as before
+	// .repeatReplace(v => v
+	// 	.replace(/([\+-])(\d)(0*)([\+-])(\d)(0+)\3\b|(\+)(\d)(0*)(-)(\d)\9\b/g, "$4$5$6$3$10$11$9$1$2$3$7$8$9")
+	// )
+
+	// // mark number pairs to get modified
+	// .replace(/(\+)(\d)0(0*)(-)(\d)\3\b/g, "$1!$20$3$4!$5$3")
+
+	// // subtract from marked additions; +!20 -> +10
+	// .replace(/\+!1(0*)/g, "")
+	// .replaceTemplate(templateRegExp`/\+!${n => n}(0*)/g`, template`+${n => n - 1}$1`, range(2, 9))
+
+	// // convert marked subtractions to additions; -!9 -> +1
+	// .replaceTemplate(templateRegExp`/-!${n => n}(0*)/g`, template`+${n => 10 - n}$1`, range(1, 9))
+
+	// .r_add()
+
+	// // +-a -> -a, --a -> a
+	// .repeatReplace(v => v
+	// 	.replace(/(?:\+-|-\+)(\d+)/g, "-$1")
+	// 	.replace(/--(\d+)/g, "$1")
+	// )
+};
+
+// TODO
+String.prototype.r_lt = function (paramRegex = /\((\d+)<(\d+)\)/g, trueStr = "($1<$2:T)", falseStr = "($1<$2:F)") { return this
+	.replace(paramRegex, "(lt:$1,$2)")
+
+	// sort from highest to lowest length
+	.repeatReplace(v => v
+		.replace(/(\d*?)(!*)(\d)(\d*)(\*|$)/gm, "$1$3!$2$4$5")
+	)
+	.repeatReplace(v => v
+		.replace(/(\d+)(!+)\*(\d+)(!+)\2(\*|$)/gm, "$3$4$2*$1$2$5")
+	)
+	
+	// sort from highest to lowest, using just the first digit (will make it somewhat faster when multiplying)
+	.repeatReplace(v => v
+		.replaceTemplate(templateRegExp`/(${n => n})(\d*)(!+)\*([${n => n + 1}-9])(\d*)\3(\*|$)/gm`, "$4$5$3*$1$2$3$6", range(1, 8))
+	)
+	.replace(/(\d+)!+/gm, "$1")
+
+	// // check length
+	// .repeatReplace(v => v
+	// 	.replace(/\b(\d)(0*)\+(\d)(0+)\2\b/gm, "$3$4$2+$1$2")
+	// )
+
+	// // sort by number
+	// .repeatReplace(v => v
+	// 	.replaceTemplate(templateRegExp`/\b(${n => n})(0*)\+([${n => n + 1}-9])\2\b/gm`, "$3$2+$1$2", range(1, 8))
+	// )
+};
+
+// evaluates addition
+String.prototype.r_isqrt = function (paramRegex = /\(sqrt:(\d+)\)/g) { return this
+	.replace(paramRegex, "(sqrt:($1<1),3,0)")
+	.repeatReplace(v => v
+		// TODO lt check
+		.replace(/\(sqrt:(\d+),(\d+),(\d+),(\d+)\)/g, "")
+	)
+};
+
+/*
+(sqrt:(lt:4,1),3,0)
+10
+(sqrt:(lt:0,1),3,0)
+1234
+10+(sqrt:(lt:16,1),3,0)+12
+*/
