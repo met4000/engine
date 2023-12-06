@@ -357,3 +357,33 @@ String.prototype.r_isqrt = function (paramRegex = /\(isqrt:(\d+)\)/g, outFormat 
 
   .replace(/\(isqrt:(\d+)\)/g, outFormat)
 };
+
+
+
+// * solution:
+
+document.body.innerText.replace(/\n$/, "")
+
+.replace(/\w+:\s*/g, "")
+.replace(/ +/g, ",")
+
+// make time/record pairs
+.repeatReplace(v => v
+  .replace(/(\d+),?(.*\n)(\d+),?(.*$)/, "$1,$3\n$2$4")
+)
+.replace(/\n+$/, "")
+
+.replace(/(\d+),(\d+)/g, "$1,(isqrt:($1*$1)-(4*$2))")
+.r_mult()
+.r_isqrt() // TODO modify formula because of isqrt
+
+.replace(/(\d+),\(?(\d+)\)?/g, "($1+$2)/2,($1-$2)/2")
+.r_add_sub()
+.r_idiv(true, /(\d+)\/(\d+)(?=,)/g, "$1")
+.r_idiv(false, /(\d+)\/(\d+)/g, "$1")
+
+.replace(/(\d+),(\d+)/g, "$1-$2+1")
+.r_add_sub()
+
+.replace(/\n/g, "*")
+.r_mult()
