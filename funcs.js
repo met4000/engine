@@ -274,35 +274,20 @@ String.prototype.r_add_sub = function () { return this
   )
 };
 
-// TODO
-String.prototype.r_lt = function (paramRegex = /\((\d+)<(\d+)\)/g, trueStr = "($1<$2:T)", falseStr = "($1<$2:F)") { return this
+// uses r_add_sub
+String.prototype.r_lt = function (paramRegex = /\(([+-]?\d+)<([+-]?\d+)\)/g, trueStr = "($1<$2:T)", falseStr = "($1<$2:F)") { return this
   .replace(paramRegex, "(lt:$1,$2)")
 
-  // sort from highest to lowest length
-  .repeatReplace(v => v
-    .replace(/(\d*?)(!*)(\d)(\d*)(\*|$)/gm, "$1$3!$2$4$5")
-  )
-  .repeatReplace(v => v
-    .replace(/(\d+)(!+)\*(\d+)(!+)\2(\*|$)/gm, "$3$4$2*$1$2$5")
-  )
+  // compute a - b
+  .replace(/\(lt:([^,]+),([^,]+)\)/, "(lt:$1,$2:$1-$2)")
+  .r_add_sub()
   
-  // sort from highest to lowest, using just the first digit (will make it somewhat faster when multiplying)
-  .repeatReplace(v => v
-    .replaceTemplate(templateRegExp`/(${n => n})(\d*)(!+)\*([${n => n + 1}-9])(\d*)\3(\*|$)/gm`, "$4$5$3*$1$2$3$6", range(1, 8))
-  )
-  .replace(/(\d+)!+/gm, "$1")
-
-  // // check length
-  // .repeatReplace(v => v
-  // 	.replace(/\b(\d)(0*)\+(\d)(0+)\2\b/gm, "$3$4$2+$1$2")
-  // )
-
-  // // sort by number
-  // .repeatReplace(v => v
-  // 	.replaceTemplate(templateRegExp`/\b(${n => n})(0*)\+([${n => n + 1}-9])\2\b/gm`, "$3$2+$1$2", range(1, 8))
-  // )
+  // a - b < 0 => a < b
+  .replace(/\(lt:([^,]+),([^,]+):-[^)]+\)/, trueStr)
+  .replace(/\(lt:([^,]+),([^,]+):[^)]+\)/, falseStr)
 };
 
+// assumes positive integer
 // evaluates addition
 String.prototype.r_isqrt = function (paramRegex = /\(sqrt:(\d+)\)/g) { return this
   .replace(paramRegex, "(sqrt:($1<1),3,0)")
