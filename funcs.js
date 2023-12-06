@@ -262,7 +262,9 @@ String.prototype.r_add_sub = function () { return this
       )
 
       // un-carry where needed for remaining subtractions; +||!0 -||! -> +|!0 +||||||||||! -||!
-      .replace(/\+(\|*)\|!(0*?)0(0*)-(\|*)!\3([+-]|\))/g, `+$1!$20$3+${"|".repeat(10)}!$2$3-$4!$3$5`)
+      .repeatReplace(v => v
+        .replace(/\+(\|*)\|!(0*?)0(0*)-(\|*)!\3([+-]|\))/g, `+$1!$20$3+${"|".repeat(10)}!$2$3-$4!$3$5`)
+      )
     )
 
     // convert from tokens back to digits
