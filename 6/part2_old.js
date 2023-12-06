@@ -8,8 +8,8 @@
   let product = 1;
   for (let race of races) {
     let midpoint = race.time / 2, radius = Math.sqrt(Math.pow(race.time, 2) - 4 * race.record) / 2;
-    let rangeStart = Math.ceil(midpoint - radius);
-    let rangeEnd = Math.floor(midpoint + radius);
+    let rangeStart = Math.floor(midpoint - radius) + 1;
+    let rangeEnd = Math.ceil(midpoint + radius) - 1;
 
     let nWinningValues = rangeEnd - rangeStart + 1;
 

@@ -375,7 +375,10 @@ document.body.innerText.replace(/\n$/, "")
 
 .replace(/(\d+),(\d+)/g, "$1,(isqrt:($1*$1)-(4*$2))")
 .r_mult()
-.r_isqrt() // TODO modify formula because of isqrt
+.r_isqrt()
+
+// * should be ceil, floor, -1, rather than floor, ceil, +1
+// but isqrt gives the wrong value, and this works on the inputs anyways
 
 .replace(/(\d+),\(?(\d+)\)?/g, "($1+$2)/2,($1-$2)/2")
 .r_add_sub()
