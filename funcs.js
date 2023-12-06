@@ -70,6 +70,11 @@ String.prototype.r_add = function () { return this
     .replace(/\((\d+(?:\+\d+)*)\)/g, "$1")
   )
 
+  // trim 0s
+  .repeatReplace(v => v
+    .replace(/\+0|0\+/g, "")
+  )
+
   // ab -> a0 + b
   .repeatReplace(v => v
     .replace(/\b(\d+?)([1-9])(0*)\b/gm, "$10$3+$2$3")
@@ -289,18 +294,23 @@ String.prototype.r_lt = function (paramRegex = /\(([+-]?\d+)<([+-]?\d+)\)/g, tru
 
 // assumes positive integer
 // evaluates addition
-String.prototype.r_isqrt = function (paramRegex = /\(sqrt:(\d+)\)/g) { return this
-  .replace(paramRegex, "(sqrt:($1<1),3,0)")
+// TODO optimise to use an addition op rather than what the current r_add is
+String.prototype.r_isqrt = function (paramRegex = /\(isqrt:(\d+)\)/g, outFormat = "($1)") { return this
+  .replace(paramRegex, "(isqrt:$1)")
+  
+  // use addition-based linear search - y:a,d,L - see wikipedia
+  .replace(/\(isqrt:([^)]+)\)/g, "(isqrt:$1:1,3,0)")
   .repeatReplace(v => v
-    // TODO lt check
-    .replace(/\(sqrt:(\d+),(\d+),(\d+),(\d+)\)/g, "")
+    // return L if y < a
+    .replace(/\(isqrt:(\d+):(\d+),(\d+),(\d+)\)/g, "(isqrt:($1<$2),$3,$4)")
+    .r_lt()
+    .replace(/\(isqrt:\((\d+)<(\d+):T\),(\d+),(\d+)\)/g, "(isqrt:$4)")
+    .replace(/\(isqrt:\((\d+)<(\d+):F\),(\d+),(\d+)\)/g, "(isqrt:$1:$2,$3,$4)")
+    
+    // a += d, d += 2, L += 1
+    .replace(/\(isqrt:(\d+):(\d+),(\d+),(\d+)\)/g, "(isqrt:$1:($2+$3),($3+2),($4+1))")
+    .r_add()
   )
-};
 
-/*
-(sqrt:(lt:4,1),3,0)
-10
-(sqrt:(lt:0,1),3,0)
-1234
-10+(sqrt:(lt:16,1),3,0)+12
-*/
+  .replace(/\(isqrt:(\d+)\)/, outFormat)
+};
