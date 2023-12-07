@@ -131,9 +131,8 @@ String.prototype.r_add = function () { return this
   )
 };
 
-// ! TODO optimise by distributing and using single digit multiplication (21 * 13 -> 20 * 10 + 20 * 3 + 1 * 10 + 1 * 3)
 // assumes positive integers
-// operates on /(\d+)\*(\d+)/, uses /[!|]/ with multiplied numbers
+// operates on /(\d+)\*(\d+)/, uses /[!]/ with multiplied numbers
 // evaluates parentheses, evaluates addition/subtraction
 String.prototype.r_mult = function () { return this
   // (a) -> a
@@ -141,47 +140,43 @@ String.prototype.r_mult = function () { return this
     .replace(/\((\d+)\)/g, "$1")
   )
 
-  // sort from highest to lowest length
-  .repeatReplace(v => v
-    .replace(/(\d*?)(!*)(\d)(\d*)(\*|$)/gm, "$1$3!$2$4$5")
-  )
-  .repeatReplace(v => v
-    .replace(/(\d+)(!+)\*(\d+)(!+)\2(\*|$)/gm, "$3$4$2*$1$2$5")
-  )
-  
-  // sort from highest to lowest, using just the first digit (will make it somewhat faster when multiplying)
-  .repeatReplace(v => v
-    .replaceTemplate(templateRegExp`/\b(${n => n})(\d*)(!+)\*([${n => n + 1}-9])(\d*)\3(\*|$)/gm`, "$4$5$3*$1$2$3$6", range(1, 8))
-  )
-  .replace(/(\d+)!+/gm, "$1")
-
-  
-  // evaluate multiplication
-
   .repeatReplace(v => v
     // a * b * c * d -> ((a ! b) * c * d)
     .replace(/(^|[^\*])\b(\d+)\*(\d+)((?:\*\d+)*)/g, "$1(($2!$3)$4)")
+
+    // (a ! 0) or (0 ! a) -> 0
+    .replace(/\b(?:\d+!0|0!\d+)\b/g, "0")
     
-    // a ! b -> a + a + ... + a
+    // distribute; ab ! cd -> a0 * c0 + a0 * d + b * c0 + b * d
     .repeatReplace(v => v
-      // a ! bc -> a ! b0 + a ! c
+      // over RHS: a ! bc -> a ! b0 + a ! c
       .repeatReplace(v => v
-        .replace(/(\d+)!(\d+)([1-9])(0*)/gm, "$1!$20$4+$1!$3$4")
+        .replace(/(\d+)!(\d+)([1-9])(0*)/g, "$1!$20$4+$1!$3$4")
       )
 
-      // a ! b00 -> a ! (b-1)99 + a
-      // has to be done in order, so that it doesn't go 30 -> 2|0 -> 1|0
-      .replace(/(\d+)!1(0*)/gm, "$1!|$2+$1")
-      .replaceTemplate(templateRegExp`/(\d+)!${n => n}(0*)/gm`, template`$1!${n => n - 1}|$2+$1`, range(2, 9))
-
-      // replace trailing 0s with 9s (from underflows)
+      // over LHS: ab ! c -> a0 ! c + b ! c
       .repeatReplace(v => v
-        .replace(/(\d*)\|(0)/gm, "$19|")
+        .replace(/(\d+)([1-9])(0*)!(\d+)/g, "$10$3!$4+$2$3!$4")
       )
-      .replace(/(\d+)\|/gm, "$1")
-      .replace(/\d+!\|\+/gm, "")
     )
 
+    // sort by digit
+    .repeatReplace(v => v
+      .replaceTemplate(templateRegExp`/([${n => n + 1}-9])(0*)!(${n => n})(0*)/g`, "$3$4!$1$2", range(1, 8))
+    )
+
+    // multiply individual digits
+    .replace(/1(0*)!([1-9])(0*)/g, "$2$1$3")
+    .replaceTemplate(templateRegExp`/2(0*)!${n => n}(0*)/g`, template`${n => 2 * n}$1$2`, range(2, 9))
+    .replaceTemplate(templateRegExp`/3(0*)!${n => n}(0*)/g`, template`${n => 3 * n}$1$2`, range(3, 9))
+    .replaceTemplate(templateRegExp`/4(0*)!${n => n}(0*)/g`, template`${n => 4 * n}$1$2`, range(4, 9))
+    .replaceTemplate(templateRegExp`/5(0*)!${n => n}(0*)/g`, template`${n => 5 * n}$1$2`, range(5, 9))
+    .replaceTemplate(templateRegExp`/6(0*)!${n => n}(0*)/g`, template`${n => 6 * n}$1$2`, range(6, 9))
+    .replaceTemplate(templateRegExp`/7(0*)!${n => n}(0*)/g`, template`${n => 7 * n}$1$2`, range(7, 9))
+    .replaceTemplate(templateRegExp`/8(0*)!${n => n}(0*)/g`, template`${n => 8 * n}$1$2`, range(8, 9))
+    .replaceTemplate(templateRegExp`/9(0*)!${n => n}(0*)/g`, template`${n => 9 * n}$1$2`, range(9, 9))
+
+    // add components back together
     .r_add_sub()
 
     // (a) -> a
