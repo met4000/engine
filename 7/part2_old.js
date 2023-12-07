@@ -1,5 +1,5 @@
 document.body.innerText.split("\n").filter(v => v).map(v => v.split(" ")).sort((_a, _b) => {
-  let a = { hand: _a[0], type: 2 }, b = { hand: _b[0], type: 2 };
+  let a = { hand: _a[0], type: 0 }, b = { hand: _b[0], type: 0 };
 
   for (let obj of [a, b]) {
     let sortedHand = obj.hand.split("").sort().filter(v => v !== "J").join("");
@@ -9,9 +9,10 @@ document.body.innerText.split("\n").filter(v => v).map(v => v.split(" ")).sort((
     else if (/(.)\1{2}/.test(sortedHand)) obj.type = 6; // 3
     else if (/(.)\1.?(.)\2/.test(sortedHand)) obj.type = 5; // 2 + 2
     else if (/(.)\1/.test(sortedHand)) obj.type = 4; // 2
+    else if (/(.)/.test(sortedHand)) obj.type = 2; // 1
 
     let nJokers = (obj.hand.match(/J/g) ?? []).length;
-    obj.type = Math.min(obj.type + 2 * nJokers, 10);
+    obj.type += 2 * nJokers;
   }
 
   if (a.type != b.type) return a.type - b.type;
