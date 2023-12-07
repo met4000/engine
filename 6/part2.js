@@ -360,7 +360,7 @@ String.prototype.r_isqrt = function (paramRegex = /\(isqrt:(\d+)\)/g, outFormat 
 document.body.innerText.replace(/\n$/, "")
 
 .replace(/\w+:\s*/g, "")
-.replace(/ +/g, ",")
+.replace(/ +/g, "")
 
 // make time/record pairs
 .repeatReplace(v => v
@@ -382,6 +382,3 @@ document.body.innerText.replace(/\n$/, "")
 
 .replace(/(\d+),(\d+)/g, "$1-$2+1")
 .r_add_sub()
-
-.replace(/\n/g, "*")
-.r_mult()
