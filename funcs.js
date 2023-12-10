@@ -24,7 +24,7 @@ String.prototype.replaceTemplate = function (searchTemplate, replaceTemplate, ar
 // string literal tag for making templates for `.replaceTemplate`
 // makes a lambda from the literal string an lambdas provided
 function template(strings, ...lambdas) {
-  return v => {
+  return (...args) => {
     let str = strings.raw[0];
 
     for (let i in lambdas) {
@@ -32,7 +32,7 @@ function template(strings, ...lambdas) {
       if (typeof lambda !== "function") lambda = _ => lambdas[i];
 
       i = parseInt(i);
-      str += lambda(v);
+      str += lambda(...args);
       str += strings.raw[i + 1];
     }
 
@@ -42,8 +42,8 @@ function template(strings, ...lambdas) {
 
 // like the `template` tag, but makes a regex
 function templateRegExp(string, ...lambdas) {
-  return function (v) {
-    let [_, pattern, flags] = /^\/(.*)\/(\w*)$/.exec(template(string, ...lambdas)(v));
+  return function (...args) {
+    let [_, pattern, flags] = /^\/(.*)\/(\w*)$/.exec(template(string, ...lambdas)(...args));
     return new RegExp(pattern, flags);
   };
 }
