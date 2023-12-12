@@ -2,19 +2,20 @@
 
 (() => {
   const OPERATIONAL = ".", DAMAGED = "#", UNKNOWN = "?";
+  const N_UNFOLD = 5;
 
   let lines = document.body.innerText.replace(/\n$/, "").split("\n").map(v => {
     let [conditions, damagedGroups] = v.split(" ");
     conditions = conditions.split("");
     damagedGroups = damagedGroups.split(",").map(v => parseInt(v));
 
-    // unfold (x5 => add 4 more)
-    for (let i = 0; i < 4; i++) {
-      conditions = conditions.concat(UNKNOWN, conditions);
-      damagedGroups = damagedGroups.concat(damagedGroups);
+    let unfoldedConditions = conditions, unfoldedDamagedGroups = damagedGroups;
+    for (let i = 0; i < N_UNFOLD - 1; i++) {
+      unfoldedConditions = unfoldedConditions.concat(UNKNOWN, conditions);
+      unfoldedDamagedGroups = unfoldedDamagedGroups.concat(damagedGroups);
     }
 
-    return { conditions, damagedGroups };
+    return { conditions: unfoldedConditions, damagedGroups: unfoldedDamagedGroups };
   });
 
   function computeNumArrangements(conditions, damagedGroups, currentGroupLength = 0) {
