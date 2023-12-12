@@ -27,15 +27,19 @@
       // too many damaged groups remaining
       if (damagedGroups.length > 1) return 0;
 
-      // current group and the last remaining group match - successful
-      if (damagedGroups[0] === currentGroupLength) return 1;
+      // current group and the last remaining group don't match
+      if (damagedGroups[0] !== currentGroupLength) return 0;
 
-      return 0;
+      return 1;
     }
 
     switch (conditions[0]) {
       case OPERATIONAL:
-        if (!currentGroupLength) return computeNumArrangements(conditions.slice(1), damagedGroups, 0);
+        if (!currentGroupLength) {
+          let nOperational = 1;
+          while (conditions[nOperational] === OPERATIONAL) nOperational++;
+          return computeNumArrangements(conditions.slice(nOperational), damagedGroups, 0);
+        }
 
         // check group is right size
         if (damagedGroups[0] !== currentGroupLength) return 0;
@@ -51,7 +55,9 @@
         if (currentGroupLength >= damagedGroups[0]) return 0;
 
         // make the current group longer
-        return computeNumArrangements(conditions.slice(1), damagedGroups, currentGroupLength + 1);
+        let nDamaged = 1;
+        while (conditions[nDamaged] === DAMAGED) nDamaged++;
+        return computeNumArrangements(conditions.slice(nDamaged), damagedGroups, currentGroupLength + nDamaged);
       
       case UNKNOWN:
         let nArrangements = 0;
