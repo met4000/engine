@@ -18,6 +18,7 @@
     return { conditions: unfoldedConditions, damagedGroups: unfoldedDamagedGroups };
   });
 
+  let cache = {};
   function computeNumArrangements(conditions, damagedGroups, currentGroupLength = 0) {
     // conditions list has ended - either succeed or fail
     if (!conditions.length) {
@@ -33,40 +34,61 @@
       return 1;
     }
 
+    // check cache
+    let key = `${currentGroupLength};${conditions.join("")};${damagedGroups.join(",")}`;
+    if (cache[key] !== undefined) return cache[key];
+
+    let returnValue = undefined;
     switch (conditions[0]) {
       case OPERATIONAL:
         if (!currentGroupLength) {
           let nOperational = 1;
           while (conditions[nOperational] === OPERATIONAL) nOperational++;
-          return computeNumArrangements(conditions.slice(nOperational), damagedGroups, 0);
+          returnValue = computeNumArrangements(conditions.slice(nOperational), damagedGroups, 0);
+          break;
         }
 
         // check group is right size
-        if (damagedGroups[0] !== currentGroupLength) return 0;
+        if (damagedGroups[0] !== currentGroupLength) {
+          returnValue = 0;
+          break;
+        }
 
         // move onto next group
-        return computeNumArrangements(conditions.slice(1), damagedGroups.slice(1), 0);
+        returnValue = computeNumArrangements(conditions.slice(1), damagedGroups.slice(1), 0);
+        break;
       
       case DAMAGED:
         // no groups left
-        if (!damagedGroups.length) return 0;
+        if (!damagedGroups.length) {
+          returnValue = 0;
+          break;
+        }
 
         // group too long
-        if (currentGroupLength >= damagedGroups[0]) return 0;
+        if (currentGroupLength >= damagedGroups[0]) {
+          returnValue = 0;
+          break;
+        }
 
         // make the current group longer
         let nDamaged = 1;
         while (conditions[nDamaged] === DAMAGED) nDamaged++;
-        return computeNumArrangements(conditions.slice(nDamaged), damagedGroups, currentGroupLength + nDamaged);
+        returnValue = computeNumArrangements(conditions.slice(nDamaged), damagedGroups, currentGroupLength + nDamaged);
+        break;
       
       case UNKNOWN:
         let nArrangements = 0;
         nArrangements += computeNumArrangements([OPERATIONAL].concat(conditions.slice(1)), damagedGroups, currentGroupLength);
         nArrangements += computeNumArrangements([DAMAGED].concat(conditions.slice(1)), damagedGroups, currentGroupLength);
-        return nArrangements;
+        returnValue = nArrangements;
+        break;
     }
 
-    throw new Error("condition not handled");
+    if (returnValue === undefined) throw new Error("condition not handled");
+
+    cache[key] = returnValue;
+    return returnValue;
   }
 
   let totalArrangements = 0;
