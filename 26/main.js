@@ -137,14 +137,14 @@ function range(a, b, delta = 1) {
       // TODO other directions
       
       // if occupied and |, remove marker
-      .replace(/@(`?(?:(?:[♔-♞・\n１-８｜]|♟︎){10}(?:(?:[♔-♞・\n１-８｜]|♟︎){11})*)?[|*]+,[^\n]*([^\n])!)/s, "$1") // up
+      .replace(/@(`?(?:(?:[♔-♞・\n１-８｜]|♟︎){10}(?:(?:[♔-♞・\n１-８｜]|♟︎){11})*)?[|*]+,[^\n]*([^\n])!)/s, "・$1") // up
 
       // remove initial preceding/trailing space
       .replace(/・?`・?/, "")
       .replace(/&/, "@")
 
       // TODO deal with final movement in a direction, and changing direction
-      .replace(/(^[^@]*)([$|]*)\*(\**)([$|]+)(,)/, "$1$3$2$4$5") // must have hit something; remove any remaining distance and change direction
+      .replace(/(^[^@*]*)\*(\**)([$|]+)(,)/, "$1$3$2$4") // must have hit something; remove any remaining distance and change direction
       .replace(/@([^$|*]+)\*(\**)([$|]+)(,)/, "・$1$3$2$4") // remove marker and change to next direction
       .replace(/([^$|*])[$|]+,/, "$1") // remove move types with all directions completed
 
@@ -189,7 +189,7 @@ function range(a, b, delta = 1) {
       .replace(/#(.*ー)/s, "$1")
 
       // TODO deal with final movement in a direction, and changing direction
-      .replace(/(^[^@]*)([%_]*)\*(\**)([%_]+)(,)/, "$1$3$2$4$5") // must have hit something; remove any remaining distance and change direction
+      .replace(/(^[^@*]*)\*(\**)([%_]+)(,)/, "$1$3$2$4") // must have hit something; remove any remaining distance and change direction
       .replace(/@([^%_*]+)\*(\**)([%_]+)(,)/, "・$1$3$2$4") // remove marker and change to next direction
       .replace(/([^%_*])[%_]+,/, "$1") // remove move types with all directions completed
 
@@ -251,8 +251,10 @@ function range(a, b, delta = 1) {
     .replace(/([１-８])(｜(?:[♔-♞・]|♟︎)*(?:[♔-♞・]|♟︎)!(?:(?:[♔-♞・\n１-８｜]|♟︎){11})*.{21})([ａ-ｈ])(.*)~/s, "$1$2$3$4$3$1")
   )
 
-  .replace(/(!)(\n[１-８]｜)/, "$2$1")
   .replace(/!/, "！")
+  .repeatReplace(v => v
+    .replace(/(！)(\n[１-８]｜|[♚-♞・]|♟︎)/, "$2$1")
+  )
 )
 
 .replace(/！/, "")
@@ -324,30 +326,32 @@ function range(a, b, delta = 1) {
 
 
 // enact the move
-.replace(/^.*Selected Move: (. ..x..)/s, "$1\n$&")
+.replace(/^.*Selected Move: (. ..x?..)/s, "$1\n$&")
 .replace(/^(.) (.)(.)x?(.)(.)\n((?:.|\n)*\5｜.*)(?:♟︎|[^♟︎])(?=(?:(?:[♔-♞・\n１-８｜]|♟︎){11})*(?:♟︎|[^♟︎]|\n){21}\4)((?:.|\n)*\3｜.*)(?:♟︎|[^♟︎])(?=(?:(?:[♔-♞・\n１-８｜]|♟︎){11})*(?:♟︎|[^♟︎]|\n){21}\2)/, "$6$1$7・")
 
 // add the move to the PGN
 
 .replace(/(Selected Move: . [^ ]+) .*$/m, "$1")
 
-.replace(/(Selected Move:.*)ａ/, "$1a")
-.replace(/(Selected Move:.*)ｂ/, "$1b")
-.replace(/(Selected Move:.*)ｃ/, "$1c")
-.replace(/(Selected Move:.*)ｄ/, "$1d")
-.replace(/(Selected Move:.*)ｅ/, "$1e")
-.replace(/(Selected Move:.*)ｆ/, "$1f")
-.replace(/(Selected Move:.*)ｇ/, "$1g")
-.replace(/(Selected Move:.*)ｈ/, "$1h")
+.repeatReplace(v => v
+  .replace(/(Selected Move:.*)ａ/, "$1a")
+  .replace(/(Selected Move:.*)ｂ/, "$1b")
+  .replace(/(Selected Move:.*)ｃ/, "$1c")
+  .replace(/(Selected Move:.*)ｄ/, "$1d")
+  .replace(/(Selected Move:.*)ｅ/, "$1e")
+  .replace(/(Selected Move:.*)ｆ/, "$1f")
+  .replace(/(Selected Move:.*)ｇ/, "$1g")
+  .replace(/(Selected Move:.*)ｈ/, "$1h")
 
-.replace(/(Selected Move:.*)１/, "$11")
-.replace(/(Selected Move:.*)２/, "$12")
-.replace(/(Selected Move:.*)３/, "$13")
-.replace(/(Selected Move:.*)４/, "$14")
-.replace(/(Selected Move:.*)５/, "$15")
-.replace(/(Selected Move:.*)６/, "$16")
-.replace(/(Selected Move:.*)７/, "$17")
-.replace(/(Selected Move:.*)８/, "$18")
-.replace(/(Selected Move:.*)９/, "$19")
+  .replace(/(Selected Move:.*)１/, "$11")
+  .replace(/(Selected Move:.*)２/, "$12")
+  .replace(/(Selected Move:.*)３/, "$13")
+  .replace(/(Selected Move:.*)４/, "$14")
+  .replace(/(Selected Move:.*)５/, "$15")
+  .replace(/(Selected Move:.*)６/, "$16")
+  .replace(/(Selected Move:.*)７/, "$17")
+  .replace(/(Selected Move:.*)８/, "$18")
+  .replace(/(Selected Move:.*)９/, "$19")
+)
 
 .replace(/\*\n\nSelected Move: . (.+)/, "$1 *")
