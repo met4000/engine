@@ -258,14 +258,65 @@ function range(a, b, delta = 1) {
 
 
 // evaluate the position after each move
+// TODO something more advanced than sum of material
 
-// TODO
+// add `ＥＶＡＬ：+` to the end of each move
+.replace(/Possible Moves:\n.+/, "$& ＥＶＡＬ：")
+.repeatReplace(v => v
+  .replace(/ＥＶＡＬ：\n(?!.*ＥＶＡＬ：).+/, "$& ＥＶＡＬ：")
+)
+
+// calculate difference in point material
+.replace(/\((.+)\) ＥＶＡＬ：/g, "$&$1")
+.repeatReplace(v => v
+  // ! will get confused about combining infinities
+  // ? maybe define ([+-])\infty([+-])\infty => $1\infty and enforce keeping recursing stuff in order
+
+  .replace(/(ＥＶＡＬ：.+)♔/g, "$1∞")
+  .replace(/(ＥＶＡＬ：.+)♚/g, "$1-∞")
+
+  .replace(/(ＥＶＡＬ：.+)♕/g, "$10!!!!!!!!!!!!!!!!!!!!") // 20
+  .replace(/(ＥＶＡＬ：.+)♖/g, "$10!!!!!!!!!!") // 10
+  .replace(/(ＥＶＡＬ：.+)♗/g, "$10!!!!!!") // 6
+  .replace(/(ＥＶＡＬ：.+)♘/g, "$10!!!!!") // 5
+  .replace(/(ＥＶＡＬ：.+)♙/g, "$10!!") // 2
+
+  .replace(/(ＥＶＡＬ：.+)♛/g, "$1-0!!!!!!!!!!!!!!!!!!!!") // -20
+  .replace(/(ＥＶＡＬ：.+)♜/g, "$1-0!!!!!!!!!!") // -10
+  .replace(/(ＥＶＡＬ：.+)♝/g, "$1-0!!!!!!") // -6
+  .replace(/(ＥＶＡＬ：.+)♞/g, "$1-0!!!!!") // -5
+  .replace(/(ＥＶＡＬ：.+)♟︎/g, "$1-0!!") // -2
+)
+.repeatReplace(v => v
+  .replace(/(ＥＶＡＬ：.*?)(?:[+-]+0!+)*([+-]+∞)(?:[+-]+0!+)*/g, "$1$2")
+
+  .replace(/(ＥＶＡＬ：.*)(?:\+|--)+/g, "$1+")
+  .replace(/(ＥＶＡＬ：.*)(?:\+-|-\+)/g, "$1-")
+
+  .replace(/(ＥＶＡＬ：.*)([+-])(!+)\2(!+)/g, "$1$2$3$4")
+
+  .replace(/(ＥＶＡＬ：.*)(\+0!*)!(-0!*)!/g, "$1$2$3")
+  .replace(/(ＥＶＡＬ：.*)(-0!*)!(\+0!*)!/g, "$1$2$3")
+  
+  .replace(/(ＥＶＡＬ：.*)[+-]0(?!!)/g, "$1")
+)
 
 
 // select move
 
-// TODO sort by evaluation
+// sort by evaluation
+.repeatReplace(v => v
+  // sort by sign
+  .replace(/^(.+ＥＶＡＬ：(?:-.*)?)\n(.+ＥＶＡＬ：\+.*)$|^(.+ＥＶＡＬ：-.*)\n(.+ＥＶＡＬ：)$/gm, "$2$4\n$1$3")
+)
+.repeatReplace(v => v
+  // sort by magnitude
+  .replace(/^(.+ＥＶＡＬ：\+0(!+))\n(.+ＥＶＡＬ：\+0\2!+)$/gm, "$3\n$1")
+  .replace(/^(.+ＥＶＡＬ：\+0!+)\n(.+ＥＶＡＬ：\+∞)$/gm, "$2\n$1")
+  
+  .replace(/^(.+ＥＶＡＬ：-0(!+)!+)\n(.+ＥＶＡＬ：-0\2)$/gm, "$3\n$1")
+  .replace(/^(.+ＥＶＡＬ：-∞)\n(.+ＥＶＡＬ：-0(!+))$/gm, "$2\n$1")
+)
 
 // choose the top rated move
 .replace(/Possible Moves:\n(. [^\n]*).*/s, "Selected Move: $1")
-.replace(/ |+$/, "")
