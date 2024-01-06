@@ -89,7 +89,7 @@
     // remove higher duration versions
     if (nextCellMeta.duration >= MIN_DURATION - 1) {
       for (let duration = nextCellMeta.duration + 1; duration < MAX_DURATION; duration++) {
-        unvisited.delete(indexFromCellMeta({ ...nextCellMeta, duration }));
+        if (!unvisited.delete(indexFromCellMeta({ ...nextCellMeta, duration }))) break;
       }
     }
 
