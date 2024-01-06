@@ -75,6 +75,7 @@ function range(a, b, delta = 1) {
 
 
 // generate moves
+// TODO add notation for check/checkmate?
 
 .replace(/$/, "\n\nPossible Moves:")
 
@@ -129,7 +130,7 @@ function range(a, b, delta = 1) {
       .replace(/([１-８])(｜(?:[♔-♞　]|♟︎)*)(　)((?:[♔-♞　\n１-８｜]|♟︎){10})@(`?(?:(?:[♔-♞　\n１-８｜]|♟︎){10}(?:(?:[♔-♞　\n１-８｜]|♟︎){11})*)?[$|*]+,[^\n]*([^\n])!(?:(?:[♔-♞　\n１-８｜]|♟︎){11})*.{21})([ａ-ｈ])(.*Possible Moves:)/s, "$1$2&$4　$5$7$8\n$6 ~$7$1") // up
       // TODO right, down, left
 
-      // TODO check for wall collision
+      // TODO check for wall collision (or friendly piece)
       
       // if not unoccupied and $, remove marker and add move
       .replace(/([１-８])(｜(?:[♔-♞　]|♟︎)*)([♚-♞]|♟︎)((?:[♔-♞　\n１-８｜]|♟︎){10})@(`?(?:(?:[♔-♞　\n１-８｜]|♟︎){10}(?:(?:[♔-♞　\n１-８｜]|♟︎){11})*)?[$*]+,[^\n]*([^\n])!(?:(?:[♔-♞　\n１-８｜]|♟︎){11})*.{21})([ａ-ｈ])(.*Possible Moves:)/s, "$1$2$3$4　$5$7$8\n$6 ~x$7$1 (-$3)") // up
@@ -170,9 +171,9 @@ function range(a, b, delta = 1) {
       // if unoccupied and _, remove added move
       .replace(/([^,][_]*\*[_],[^\n]*([^\n])!.*Possible Moves:).*~～/s, "$1")
 
-      // if wall, remove marker
-      .replace(/([｜\n])((?:[♔-♞　\n１-８｜]|♟︎){9})@(`?(?:(?:[♔-♞　\n１-８｜]|♟︎){11}(?:(?:[♔-♞　\n１-８｜]|♟︎){10})*)?[%_]*\*{2}[%_],[^\n]*([^\n])!)/s, "$1$2　$3") // up-right
-      .replace(/([｜\n])((?:[♔-♞　\n１-８｜]|♟︎){11})@(`?(?:(?:[♔-♞　\n１-８｜]|♟︎){11}(?:(?:[♔-♞　\n１-８｜]|♟︎){12})*)?[%_]*\*[%_],[^\n]*([^\n])!)/s, "$1$2　$3") // up-left
+      // if wall or friendly, remove marker
+      .replace(/([♔-♙｜\n])((?:[♔-♞　\n１-８｜]|♟︎){9})@(`?(?:(?:[♔-♞　\n１-８｜]|♟︎){11}(?:(?:[♔-♞　\n１-８｜]|♟︎){10})*)?[%_]*\*{2}[%_],[^\n]*([^\n])!)/s, "$1$2　$3") // up-right
+      .replace(/([♔-♙｜\n])((?:[♔-♞　\n１-８｜]|♟︎){11})@(`?(?:(?:[♔-♞　\n１-８｜]|♟︎){11}(?:(?:[♔-♞　\n１-８｜]|♟︎){12})*)?[%_]*\*[%_],[^\n]*([^\n])!)/s, "$1$2　$3") // up-left
       
       // if occupied, remove marker and add move
       .replace(/([♚-♞]|♟︎)((?:[♔-♞　\n１-８｜]|♟︎){9})@(`?(?:(?:[♔-♞　\n１-８｜]|♟︎){11}(?:(?:[♔-♞　\n１-８｜]|♟︎){10})*)?[%_]*\*{2}[%_],[^\n]*([^\n])!.*Possible Moves:)/s, "$1#$2　$3\n$4 ~x～ (-$1)") // up-right
@@ -320,3 +321,33 @@ function range(a, b, delta = 1) {
 
 // choose the top rated move
 .replace(/Possible Moves:\n(. [^\n]*).*/s, "Selected Move: $1")
+
+
+// enact the move
+.replace(/^.*Selected Move: (.{6})/s, "$1\n$&")
+.replace(/^(.) (.)(.)(.)(.)\n((?:.|\n)*\5｜.*).(?=(?:(?:[♔-♞　\n１-８｜]|♟︎){11})*(?:.|\n){21}\4)((?:.|\n)*\3｜.*).(?=(?:(?:[♔-♞　\n１-８｜]|♟︎){11})*(?:.|\n){21}\2)/, "$6$1$7　")
+
+// add the move to the PGN
+
+.replace(/(Selected Move: .{6}).*$/m, "$1")
+
+.replace(/(Selected Move:.*)ａ/, "$1a")
+.replace(/(Selected Move:.*)ｂ/, "$1b")
+.replace(/(Selected Move:.*)ｃ/, "$1c")
+.replace(/(Selected Move:.*)ｄ/, "$1d")
+.replace(/(Selected Move:.*)ｅ/, "$1e")
+.replace(/(Selected Move:.*)ｆ/, "$1f")
+.replace(/(Selected Move:.*)ｇ/, "$1g")
+.replace(/(Selected Move:.*)ｈ/, "$1h")
+
+.replace(/(Selected Move:.*)１/, "$11")
+.replace(/(Selected Move:.*)２/, "$12")
+.replace(/(Selected Move:.*)３/, "$13")
+.replace(/(Selected Move:.*)４/, "$14")
+.replace(/(Selected Move:.*)５/, "$15")
+.replace(/(Selected Move:.*)６/, "$16")
+.replace(/(Selected Move:.*)７/, "$17")
+.replace(/(Selected Move:.*)８/, "$18")
+.replace(/(Selected Move:.*)９/, "$19")
+
+.replace(/\*\n\nSelected Move: . (.{4})/, "$1 *")
