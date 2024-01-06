@@ -324,12 +324,12 @@ function range(a, b, delta = 1) {
 
 
 // enact the move
-.replace(/^.*Selected Move: (.{6})/s, "$1\n$&")
-.replace(/^(.) (.)(.)(.)(.)\n((?:.|\n)*\5｜.*).(?=(?:(?:[♔-♞・\n１-８｜]|♟︎){11})*(?:.|\n){21}\4)((?:.|\n)*\3｜.*).(?=(?:(?:[♔-♞・\n１-８｜]|♟︎){11})*(?:.|\n){21}\2)/, "$6$1$7・")
+.replace(/^.*Selected Move: (. ..x..)/s, "$1\n$&")
+.replace(/^(.) (.)(.)x?(.)(.)\n((?:.|\n)*\5｜.*)(?:♟︎|[^♟︎])(?=(?:(?:[♔-♞・\n１-８｜]|♟︎){11})*(?:♟︎|[^♟︎]|\n){21}\4)((?:.|\n)*\3｜.*)(?:♟︎|[^♟︎])(?=(?:(?:[♔-♞・\n１-８｜]|♟︎){11})*(?:♟︎|[^♟︎]|\n){21}\2)/, "$6$1$7・")
 
 // add the move to the PGN
 
-.replace(/(Selected Move: .{6}).*$/m, "$1")
+.replace(/(Selected Move: . [^ ]+) .*$/m, "$1")
 
 .replace(/(Selected Move:.*)ａ/, "$1a")
 .replace(/(Selected Move:.*)ｂ/, "$1b")
@@ -350,4 +350,4 @@ function range(a, b, delta = 1) {
 .replace(/(Selected Move:.*)８/, "$18")
 .replace(/(Selected Move:.*)９/, "$19")
 
-.replace(/\*\n\nSelected Move: . (.{4})/, "$1 *")
+.replace(/\*\n\nSelected Move: . (.+)/, "$1 *")
