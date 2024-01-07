@@ -7,10 +7,16 @@
     "idiv",
     "infty",
     "isqrt",
+    "isready",
+    "ponderhit",
     "qdiv",
+    "readyok",
+    "setoption",
+    "startpos",
     "Strs",
     "TJQKA",
-    "TQKA"
+    "TQKA",
+    "ucinewgame"
   ],
   "cmake.configureOnOpen": false
 }
