@@ -1,6 +1,7 @@
 {
   "cSpell.words": [
     "ａｂｃｄｅｆｇｈ",
+    "bestmove",
     "boogaloo",
     "centi",
     "ＥＶＡＬ",
@@ -16,7 +17,8 @@
     "Strs",
     "TJQKA",
     "TQKA",
-    "ucinewgame"
+    "ucinewgame",
+    "uciok"
   ],
   "cmake.configureOnOpen": false
 }

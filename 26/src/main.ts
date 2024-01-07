@@ -1,4 +1,7 @@
+import { EOL } from "os";
 import { stderr, stdin, stdout } from "process";
+
+const ENGINE_NAME = "Regex Engine", ENGINE_VERSION = "0.1.0", ENGINE_AUTHOR = "met4000";
 
 let debugMode = false; // TODO use
 let exitCode: number | undefined;
@@ -13,19 +16,25 @@ const getNextInput = () => new Promise<Buffer>(resolve => stdin.once("data", dat
 const log = (level: "DEV" | "DEBUG" | "INFO" | "ERROR", str: string) => {
   if (level === "DEBUG" && !debugMode) return;
 
-  stdout.write(`info string ${level}: ${str}\n`);
-  if (level === "ERROR") stderr.write(`${str}\n`);
+  stdout.write(`info string ${level}: ${str}${EOL}`);
+  if (level === "ERROR") stderr.write(`${str}${EOL}`);
 }
+const send = (str: string) => stdout.write(`${str}${EOL}`);
 
-const commands: { regexp: RegExp, exec: (groups: RegExpExecArray) => string | void }[] = [
+
+// * as per UCI standard, commands should test for matches with the _end_ of commands,
+// * and ignore anything they don't recognise earlier
+
+const commands: { regexp: RegExp, exec: (groups: RegExpExecArray) => void }[] = [
   {
     regexp: /uci\s*$/,
     exec(groups) {
-      // TODO:
-      // - identify using `id` command
-      // - send setting support via `option` command
-      // - return `uciok`
-      log("DEV", "TODO uci");
+      send(`id name ${ENGINE_NAME} v${ENGINE_VERSION}`);
+      send(`id author ${ENGINE_AUTHOR}`);
+
+      // TODO send setting support via `option` command
+
+      send("uciok");
     },
   }, {
     regexp: /debug(?:\s+(on|off))?\s*$/,
@@ -53,7 +62,7 @@ const commands: { regexp: RegExp, exec: (groups: RegExpExecArray) => string | vo
     regexp: /isready\s*$/,
     exec(groups) {
       // TODO wait for init
-      return "readyok";
+      send("readyok");
     },
   }, {
     regexp: /setoption\s+name\s+(\b.+?\b)(?:\s+value\s+(\b.+\b))?\s*$/,
@@ -66,8 +75,8 @@ const commands: { regexp: RegExp, exec: (groups: RegExpExecArray) => string | vo
   }, {
     regexp: /register\s+(later)\s*$|register\s+(name|code)\s+(\b.+?\b)(?:\s+(name|code)\s+(\b.+?\b))?\s*$/,
     exec(groups) {
-      // TODO
-      log("DEV", "TODO register; TODO parse");
+      send("registration checking");
+      send("registration ok");
     },
   }, {
     regexp: /ucinewgame\s*$/,
@@ -110,17 +119,13 @@ const commands: { regexp: RegExp, exec: (groups: RegExpExecArray) => string | vo
 mainLoop:
 while (exitCode === undefined) {
   const data = await getNextInput();
-  const commandStr = data.toString().replace(/\n+$/, "");
-
-  // * as per standard, commands should test for matches with the _end_ of commands,
-  // * and ignore anything they don't recognise earlier
+  const commandStr = data.toString().replace(/[\r\n]+$/, "");
 
   for (const command of commands) {
     const groups = command.regexp.exec(commandStr);
     if (groups === null) continue;
 
-    const returnStr = command.exec(groups);
-    if (returnStr !== undefined) stdout.write(`${returnStr}\n`);
+    command.exec(groups);
     continue mainLoop;
   }
 
