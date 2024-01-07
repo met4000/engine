@@ -11,5 +11,6 @@
     "Strs",
     "TJQKA",
     "TQKA"
-  ]
+  ],
+  "cmake.configureOnOpen": false
 }
