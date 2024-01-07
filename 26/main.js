@@ -98,25 +98,20 @@ function range(a, b, delta = 1) {
   // move types must be in the same order as above
 
   // piece movement
-  // doesn't know about pawn promotion or en-passant
-  // TODO check piece is on board
-  // TODO change pawns from $ and % to ^ and _
-  // .replace(/！♙(.*\n.*\nー)/, "||*,_**,♙!$1") // starting rank
-  // .replace(/！♙/, "|*,_**,♙!")
-  // .replace(/！♗/, "%%%%%%%%****,♗!")
-  // .replace(/！♘/, "<****,>****,♘!")
-  // .replace(/！♖/, "%%%%%%%%****,♖!")
-  // .replace(/！♕/, "$$$$$$$$$$$$$$$$****,%%%%%%%%****,♕!")
-  // .replace(/！♔/, "$$****,%****,♔!")
-  
-  // ! only pawn forward moves and knight moves for now
+  // TODO doesn't know about pawn promotion or en-passant
   .replace(/！♙(.*\n.*\nー)/, "||*,_**,♙!$1") // starting rank
   .replace(/！♙/, "|*,_**,♙!")
+  .replace(/！♗/, "%%%%%%%%****,♗!")
   .replace(/！♘/, "<****,>****,♘!")
-  .replace(/！([♔-♙])/, "$1!")
+  .replace(/！♖/, "$$$$$$$$****,♖!")
+  .replace(/！♕/, "$$$$$$$$$$$$$$$$****,%%%%%%%%****,♕!")
+  .replace(/！♔/, "$$****,%****,♔!")
 
   // uses a @ to mark where the previous check was (and & after moving the check)
 
+  // ! bug with duplicated moves
+
+  // ! bug with rook movement
   // orthogonal movement ($ and |)
   .repeatReplace(v => v
     .replace(/([$|]+)(\*|\*{4}),/, "@`$1$2,")
@@ -154,6 +149,7 @@ function range(a, b, delta = 1) {
   )
 
 
+  // ! bug with bishop and king movement
   // diagonal movement (% and _)
   .repeatReplace(v => v
     .replace(/([%_]+)(\*|\*{2}),/, "@`$1$2,")
@@ -274,6 +270,8 @@ function range(a, b, delta = 1) {
 .repeatReplace(v => v
   // ! will get confused about combining infinities
   // ? maybe define ([+-])\infty([+-])\infty => $1\infty and enforce keeping recursing stuff in order
+
+  // TODO switch to centi-pawn precision and multiple 'digits' (still token based)
 
   .replace(/(ＥＶＡＬ：.+)♔/g, "$1∞")
   .replace(/(ＥＶＡＬ：.+)♚/g, "$1-∞")
