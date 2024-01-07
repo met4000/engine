@@ -75,6 +75,7 @@ const commands: { regexp: RegExp, exec: (groups: RegExpExecArray) => void }[] = 
   }, {
     regexp: /register\s+(later)\s*$|register\s+(name|code)\s+(\b.+?\b)(?:\s+(name|code)\s+(\b.+?\b))?\s*$/,
     exec(groups) {
+      if (groups[1] === "later") return;
       send("registration checking");
       send("registration ok");
     },
