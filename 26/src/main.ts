@@ -86,7 +86,7 @@ const commands: { regexp: RegExp, exec: (groups: RegExpExecArray) => void }[] = 
   }, {
     regexp: /position(?:\s+(fen\s+(\b.+?\b)|startpos))?(\s+moves\s+(\b.+?\b))?\s*$/,
     exec(groups) {
-      const posType = groups[1], fenStr = groups[2], movesStr = groups[3];
+      const posType = groups[1], fenStr = groups[2], movesStr = groups[4];
       let fen: string = fenStr;
       if (posType === "startpos") fen = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1";
 
@@ -119,6 +119,7 @@ const commands: { regexp: RegExp, exec: (groups: RegExpExecArray) => void }[] = 
       exitCode = 0;
     },
   }, {
+    // * custom command
     regexp: /boardstate\s*$/,
     exec(groups) {
       send(printBoardState(boardState));

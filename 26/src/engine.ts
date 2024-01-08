@@ -11,20 +11,10 @@ export type Move = string;
 
 // TODO
 export const loadFEN = (fen: string): BoardState => fen
-  // .replace(/rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR, "")
   .replace(/ .*$/, `\nー＋ーーーーーーーー\n　｜ａｂｃｄｅｆｇｈ`)
   .replace(/\//g, "\n$&｜")
   .replace(/^/, "/｜")
-  .replaceTemplate("/", template`${(n: number) => ({
-    1: "１",
-    2: "２",
-    3: "３",
-    4: "４",
-    5: "５",
-    6: "６",
-    7: "７",
-    8: "８",
-  })[n] as string}`, range(8, 1)) // specifically reverse order
+  .replaceTemplate("/", template`${(n: number) => String.fromCharCode("０".charCodeAt(0) + n)}`, range(8, 1)) // specifically reverse order
 
   .replace(/k/g, "♚")
   .replace(/K/g, "♔")
@@ -49,7 +39,25 @@ export const loadFEN = (fen: string): BoardState => fen
 ;
 
 export const enactMoves = (boardState: BoardState, moves: Move[]): BoardState => _enactMoves(`${moves.join(", ")}\n${boardState}`);
-const _enactMoves = (str: string): string => str; // TODO
+const _enactMoves = (str: string): BoardState => str
+  .replaceTemplate(
+    templateRegExp`/${(n: number) => String(n)}/g`,
+    (n: number) => String.fromCharCode("０".charCodeAt(0) + n),
+    range(1, 8)
+  )
+  .replaceTemplate(
+    templateRegExp`/${(n: number) => String.fromCharCode("a".charCodeAt(0) + n - 1)}/g`,
+    (n: number) => String.fromCharCode("ａ".charCodeAt(0) + n - 1),
+    range(1, 8)
+  )
+
+  .repeatReplace(v => v
+    .replace(/^([^♔-♟︎])(.)(.*\n(?:.|\n)*\2｜.*)(♟︎|[^♟︎])(?=(?:(?:[♔-♞・\n１-８｜]|♟︎){11})*(?:♟︎|[^♟︎]|\n){21}\1)/, "$4$&")
+    .replace(/^([♔-♞]|♟︎)(.)(.)(.)(.)(?:, )?(.*\n(?:.|\n)*\5｜.*)(?:♟︎|[^♟︎])(?=(?:(?:[♔-♞・\n１-８｜]|♟︎){11})*(?:♟︎|[^♟︎]|\n){21}\4)((?:.|\n)*\3｜.*)(?:♟︎|[^♟︎])(?=(?:(?:[♔-♞・\n１-８｜]|♟︎){11})*(?:♟︎|[^♟︎]|\n){21}\2)/, "$6$1$7・")
+    .replace(/^([♔-♞]|♟︎)(.)(.)(.)(.)(?:, )?(.*\n(?:.|\n)*\3｜.*)(?:♟︎|[^♟︎])(?=(?:(?:[♔-♞・\n１-８｜]|♟︎){11})*(?:♟︎|[^♟︎]|\n){21}\2)((?:.|\n)*\5｜.*)(?:♟︎|[^♟︎])(?=(?:(?:[♔-♞・\n１-８｜]|♟︎){11})*(?:♟︎|[^♟︎]|\n){21}\4)/, "$6・$7$1")
+  )
+  .replace(/^\n/, "")
+;
 
 // TODO
 export const nextMove = (boardState: BoardState): Move => "e2e4";
