@@ -1,15 +1,26 @@
 {
   "cSpell.words": [
     "ａｂｃｄｅｆｇｈ",
+    "bestmove",
+    "boardstate",
     "boogaloo",
     "centi",
     "ＥＶＡＬ",
     "idiv",
     "infty",
     "isqrt",
+    "isready",
+    "ponderhit",
     "qdiv",
+    "readyok",
+    "rnbqkbnr",
+    "setoption",
+    "startpos",
     "Strs",
     "TJQKA",
-    "TQKA"
-  ]
+    "TQKA",
+    "ucinewgame",
+    "uciok"
+  ],
+  "cmake.configureOnOpen": false
 }
