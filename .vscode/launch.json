@@ -13,6 +13,15 @@
       "program": "${workspaceFolder}/26/src/main.ts",
       "preLaunchTask": "tsc: build - 26/tsconfig.json",
       "outFiles": ["${workspaceFolder}/26/out/**/*.js"]
+    },
+    {
+      "type": "node",
+      "sourceMaps": true,
+      "request": "attach",
+      "name": "Attach to Program",
+      "address": "localhost",
+      "port": 5858,
+      "outFiles": ["${workspaceFolder}/26/out/**/*.js"]
     }
   ]
 }

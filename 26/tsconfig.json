@@ -1,12 +1,12 @@
 {
   "compilerOptions": {
     "outDir": "out",
-    "allowJs": true,
     "sourceMap": true,
 
     "target": "es2017",
     "module": "esnext",
     "esModuleInterop": true,
+
     "forceConsistentCasingInFileNames": true,
     "strict": true,
     "skipLibCheck": true

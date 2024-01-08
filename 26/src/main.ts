@@ -1,10 +1,11 @@
 import { EOL } from "os";
 import { stderr, stdin, stdout } from "process";
 
-const ENGINE_NAME = "Regex Engine", ENGINE_VERSION = "0.1.0", ENGINE_AUTHOR = "met4000";
+import { BoardState, ENGINE_AUTHOR, ENGINE_NAME, ENGINE_VERSION, enactMoves, loadFEN, nextMove, printBoardState } from "./engine.js";
 
 let debugMode = false; // TODO use
 let exitCode: number | undefined;
+let boardState: BoardState;
 
 const getNextInput = () => new Promise<Buffer>(resolve => stdin.once("data", data => resolve(data)));
 
@@ -61,16 +62,13 @@ const commands: { regexp: RegExp, exec: (groups: RegExpExecArray) => void }[] = 
   }, {
     regexp: /isready\s*$/,
     exec(groups) {
-      // TODO wait for init
       send("readyok");
     },
   }, {
     regexp: /setoption\s+name\s+(\b.+?\b)(?:\s+value\s+(\b.+\b))?\s*$/,
     exec(groups) {
       const name = groups[1], value = groups[2];
-
-      // TODO
-      log("DEV", `TODO setoption; name: '${name}', value: '${value}'`);
+      // TODO add any options that get supported
     },
   }, {
     regexp: /register\s+(later)\s*$|register\s+(name|code)\s+(\b.+?\b)(?:\s+(name|code)\s+(\b.+?\b))?\s*$/,
@@ -86,16 +84,22 @@ const commands: { regexp: RegExp, exec: (groups: RegExpExecArray) => void }[] = 
       log("DEV", "TODO ucinewgame");
     },
   }, {
-    regexp: /position(?:\s+(?:(fen)\s+(\b.+?\b)|(startpos)))?\s+moves\s+(\b.+?\b)?\s*$/,
+    regexp: /position(?:\s+(fen\s+(\b.+?\b)|startpos))?(\s+moves\s+(\b.+?\b))?\s*$/,
     exec(groups) {
-      // TODO
-      log("DEV", "TODO position; TODO parse");
+      const posType = groups[1], fenStr = groups[2], movesStr = groups[3];
+      let fen: string = fenStr;
+      if (posType === "startpos") fen = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1";
+
+      if (fen !== undefined) boardState = loadFEN(fen);
+
+      if (movesStr === undefined) return;
+      const moves = movesStr.split(" ");
+      boardState = enactMoves(boardState, moves);
     },
   }, {
     regexp: /go\s+.+\s*$/, // ! TODO
     exec(groups) {
-      // TODO
-      log("DEV", "TODO go; TODO regexp and parse");
+      send(nextMove(boardState));
     },
   }, {
     regexp: /stop\s*$/,
@@ -114,7 +118,12 @@ const commands: { regexp: RegExp, exec: (groups: RegExpExecArray) => void }[] = 
     exec(groups) {
       exitCode = 0;
     },
-  },
+  }, {
+    regexp: /boardstate\s*$/,
+    exec(groups) {
+      send(printBoardState(boardState));
+    },
+  }
 ];
 
 mainLoop:
