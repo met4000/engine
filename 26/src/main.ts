@@ -97,7 +97,7 @@ const commands: { regexp: RegExp, exec: (groups: RegExpExecArray) => void }[] = 
       boardState = enactMoves(boardState, moves);
     },
   }, {
-    regexp: /go\s+.+\s*$/, // ! TODO
+    regexp: /go(\s+.+)?\s*$/, // ! TODO
     exec(groups) {
       // TODO actually conform to the spec (e.g. 'go infinite' is not allowed to return)
       let move = nextMove(boardState);

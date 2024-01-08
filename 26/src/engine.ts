@@ -38,6 +38,7 @@ export const loadFEN = (fen: string): BoardState => fen
   .replace(/0/g, "")
 ;
 
+// ! doesn't support en passant or castling
 export const enactMoves = (boardState: BoardState, moves: Move[]): BoardState => _enactMoves(`${moves.join(", ")}\n${boardState}`);
 const _enactMoves = (str: string): BoardState => str
   .replaceTemplate(
