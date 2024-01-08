@@ -39,8 +39,22 @@ export const loadFEN = (fen: string): BoardState => fen
 ;
 
 // ! doesn't support en passant or castling
+// ! doesn't yet support promotion
+// ! doesn't yet support moves staying on the same rank
 export const enactMoves = (boardState: BoardState, moves: Move[]): BoardState => _enactMoves(`${moves.join(", ")}\n${boardState}`);
 const _enactMoves = (str: string): BoardState => str
+  .replace(/(1)q/g, "$1♛")
+  .replace(/(8)q/g, "$1♕")
+
+  .replace(/(1)r/g, "$1♜")
+  .replace(/(8)r/g, "$1♖")
+  
+  .replace(/(1)b/g, "$1♝")
+  .replace(/(8)b/g, "$1♗")
+
+  .replace(/(1)n/g, "$1♞")
+  .replace(/(8)n/g, "$1♘")
+
   .replaceTemplate(
     templateRegExp`/${(n: number) => String(n)}/g`,
     (n: number) => String.fromCharCode("０".charCodeAt(0) + n),
@@ -56,6 +70,10 @@ const _enactMoves = (str: string): BoardState => str
     .replace(/^([^♔-♟︎])(.)(.*\n(?:.|\n)*\2｜.*)(♟︎|[^♟︎])(?=(?:(?:[♔-♞・\n１-８｜]|♟︎){11})*(?:♟︎|[^♟︎]|\n){21}\1)/, "$4$&")
     .replace(/^([♔-♞]|♟︎)(.)(.)(.)(.)(?:, )?(.*\n(?:.|\n)*\5｜.*)(?:♟︎|[^♟︎])(?=(?:(?:[♔-♞・\n１-８｜]|♟︎){11})*(?:♟︎|[^♟︎]|\n){21}\4)((?:.|\n)*\3｜.*)(?:♟︎|[^♟︎])(?=(?:(?:[♔-♞・\n１-８｜]|♟︎){11})*(?:♟︎|[^♟︎]|\n){21}\2)/, "$6$1$7・")
     .replace(/^([♔-♞]|♟︎)(.)(.)(.)(.)(?:, )?(.*\n(?:.|\n)*\3｜.*)(?:♟︎|[^♟︎])(?=(?:(?:[♔-♞・\n１-８｜]|♟︎){11})*(?:♟︎|[^♟︎]|\n){21}\2)((?:.|\n)*\5｜.*)(?:♟︎|[^♟︎])(?=(?:(?:[♔-♞・\n１-８｜]|♟︎){11})*(?:♟︎|[^♟︎]|\n){21}\4)/, "$6・$7$1")
+
+    // promotion
+    .replace(/^([♕-♘])(?:, )?((?:.|\n)*８｜.*)♙/, "$2$1")
+    .replace(/^([♕-♘])(?:, )?((?:.|\n)*１｜.*)♟︎/, "$2$1")
   )
   .replace(/^\n/, "")
 ;
