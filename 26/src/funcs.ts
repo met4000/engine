@@ -1,9 +1,12 @@
+type TemplateFunc<T, R> = ((v: T) => R) | R;
+type GetTemplateReturn<F extends TemplateFunc<any, any>, T = any> = F extends TemplateFunc<T, infer R> ? R : unknown;
+
 declare global {
   interface String {
     repeatReplace(f: (str: string) => string): string;
     replaceTemplate<T>(
-      searchTemplate: ((v: T) => string | RegExp) | string,
-      replaceTemplate: ((v: T) => string) | string,
+      searchTemplate: TemplateFunc<T, RegExp | string>,
+      replaceTemplate: TemplateFunc<T, string>,
       arr: T[]
     ): string;
   }
@@ -25,8 +28,8 @@ String.prototype.repeatReplace = function (f) {
  */
 String.prototype.replaceTemplate = function (searchTemplate, replaceTemplate, arr) {
   let searchFunc = searchTemplate, replaceFunc = replaceTemplate;
-  if (typeof searchFunc !== "function") searchFunc = () => String(searchTemplate);
-  if (typeof replaceFunc !== "function") replaceFunc = () => String(replaceTemplate);
+  if (typeof searchFunc !== "function") searchFunc = () => searchTemplate as GetTemplateReturn<typeof searchFunc>;
+  if (typeof replaceFunc !== "function") replaceFunc = () => replaceTemplate as GetTemplateReturn<typeof replaceFunc>;
 
   let str = String(this);
   for (let v of arr) str = str.replace(searchFunc(v), replaceFunc(v));
@@ -39,7 +42,7 @@ String.prototype.replaceTemplate = function (searchTemplate, replaceTemplate, ar
  */
 export const template = <T>(
   strings: TemplateStringsArray,
-  ...lambdas: (((v: T) => string) | string)[]
+  ...lambdas: TemplateFunc<T, string>[]
 ): ((v: T) => string) => (v) => {
   let str = strings.raw[0];
 
@@ -56,7 +59,7 @@ export const template = <T>(
 /** like the `template` tag, but makes a regex */
 export const templateRegExp = <T>(
   string: TemplateStringsArray,
-  ...lambdas: (((v: T) => string) | string)[]
+  ...lambdas: TemplateFunc<T, string>[]
 ): ((v: T) => RegExp) => function (v) {
   const regexStr = template(string, ...lambdas)(v);
   const regexResult = /^\/(.*)\/(\w*)$/.exec(regexStr);
