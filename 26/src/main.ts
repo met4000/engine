@@ -97,17 +97,22 @@ const commands: { regexp: RegExp, exec: (groups: RegExpExecArray) => void }[] = 
       boardState = enactMoves(boardState, moves);
     },
   }, {
-    regexp: /go(\s+.+)?\s*$/, // ! TODO
+    regexp: /go(?:\s+(\b.+\b))?\s*$/, // ! TODO
     exec(groups) {
       // TODO actually conform to the spec (e.g. 'go infinite' is not allowed to return)
       let move = nextMove(boardState);
-      send(`bestmove ${move}`);
+      if (groups[1] === "infinite") {
+        send(`info multipv 1 pv ${move}`);
+      } else {
+        send(`bestmove ${move}`);
+      }
     },
   }, {
     regexp: /stop\s*$/,
     exec(groups) {
       // TODO
-      log("DEV", "TODO stop");
+      let move = nextMove(boardState);
+      send(`bestmove ${move}`);
     },
   }, {
     regexp: /ponderhit\s*$/,
