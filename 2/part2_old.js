@@ -1,6 +1,0 @@
-document.body.innerText.split("\n").filter(v => v)
-.map(v => v.split(":")[1].split(";")
-.map(_v => _v.split(",").map(__v => (([_, n, c]) => ([c, parseInt(n)]))(/(\d+)\s+(\w+)/.exec(__v))))
-.reduce((r, arr) => arr.reduce((_r, [c, n]) => (_r[c] ?? -1) < n ? { ..._r, [c]: n } : _r, r), {}))
-.map(v => (v.blue ?? 0) * (v.red ?? 0) * (v.green ?? 0))
-.reduce((r, v) => r + v, 0)

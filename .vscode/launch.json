@@ -10,9 +10,9 @@
       "console": "integratedTerminal",
       "request": "launch",
       "name": "Launch Program",
-      "program": "${workspaceFolder}/26/src/main.ts",
-      "preLaunchTask": "tsc: build - 26/tsconfig.json",
-      "outFiles": ["${workspaceFolder}/26/out/**/*.js"]
+      "program": "${workspaceFolder}/src/main.ts",
+      "preLaunchTask": "tsc: build - tsconfig.json",
+      "outFiles": ["${workspaceFolder}/out/**/*.js"]
     },
     {
       "type": "node",
@@ -21,7 +21,7 @@
       "name": "Attach to Program",
       "address": "localhost",
       "port": 5858,
-      "outFiles": ["${workspaceFolder}/26/out/**/*.js"]
+      "outFiles": ["${workspaceFolder}/out/**/*.js"]
     }
   ]
 }
