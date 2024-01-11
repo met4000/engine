@@ -6,22 +6,35 @@
   "configurations": [
     {
       "type": "node",
-      "sourceMaps": true,
-      "console": "integratedTerminal",
       "request": "launch",
       "name": "Launch Program",
+
+      "console": "integratedTerminal",
+      "sourceMaps": true,
+
+      "skipFiles": [
+        "<node_internals>/**"
+      ],
       "program": "${workspaceFolder}/src/main.ts",
       "preLaunchTask": "tsc: build - tsconfig.json",
-      "outFiles": ["${workspaceFolder}/out/**/*.js"]
+      "outFiles": [
+        "${workspaceFolder}/out/**/*.js"
+      ]
     },
     {
       "type": "node",
-      "sourceMaps": true,
       "request": "attach",
-      "name": "Attach to Program",
-      "address": "localhost",
       "port": 5858,
-      "outFiles": ["${workspaceFolder}/out/**/*.js"]
+      "name": "Attach Program",
+
+      "sourceMaps": true,
+
+      "skipFiles": [
+        "<node_internals>/**"
+      ],
+      "outFiles": [
+        "${workspaceFolder}/out/**/*.js"
+      ]
     }
   ]
 }
