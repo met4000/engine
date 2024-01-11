@@ -9,33 +9,61 @@ export const printBoardState = (boardState: BoardState): string => boardState;
 
 export type Move = string;
 
-// TODO
+/**
+ * 'startpos' FEN (rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1) stored as:
+w KQkq - | ||
+8/rnbqkbnr
+7/pppppppp
+6/________
+5/________
+4/________
+3/________
+2/PPPPPPPP
+1/RNBQKBNR
+//abcdefgh
+ */
 export const loadFEN = (fen: string): BoardState => fen
-  .replace(/ .*$/, `\nー＋ーーーーーーーー\n　｜ａｂｃｄｅｆｇｈ`)
-  .replace(/\//g, "\n$&｜")
-  .replace(/^/, "/｜")
-  .replaceTemplate("/", template`${(n: number) => String.fromCharCode("０".charCodeAt(0) + n)}`, range(8, 1)) // specifically reverse order
+  // move state info to the top
+  .replace(/^(\S+) (.+)$/, "$2\n$1")
 
-  .replace(/k/g, "♚")
-  .replace(/K/g, "♔")
+  // replace empty space with `_`
+  .replaceTemplate(
+    templateRegExp`/${(n: number) => String(n)}(?!.*\n)/g`,
+    template`${(n: number) => String(n - 1)}_`,
+    range(8, 1)
+  )
+  .replace(/0(?!.*\n)/g, "")
 
-  .replace(/q/g, "♛")
-  .replace(/Q/g, "♕")
-
-  .replace(/r/g, "♜")
-  .replace(/R/g, "♖")
+  // add rank numbers
+  .replace(/\n/, "$&8/")
+  .replaceTemplate(
+    /(\D)(\/)/,
+    template`$1\n${(n: number) => String(n)}$2`,
+    range(7, 1)
+  )
   
-  .replace(/b/g, "♝")
-  .replace(/B/g, "♗")
+  // replace move count numbers with |s
+  .repeatReplace(v => v
+    .replace(/^(.+ .+ .+ .*\d)(?!\|)/, "$1|")
+  )
+  .repeatReplace(v => v
+    .replace(/^(.+ .+ .+ .*)(\d)([1-9])(0*)\b/, "$1$2$40`$3$4")
+  )
+  .repeatReplace(v => v
+    .replaceTemplate(
+      templateRegExp`/^(.+ .+ .+ .*)${(n: number) => String(n)}/`,
+      template`$1${(n: number) => String(n - 1)}|`,
+      range(9, 2)
+    )
+    .replace(/^(.+ .+ .+ .*)1/, "$1|")
+  )
+  .repeatReplace(v => v
+    .replace(/(\|*)0/, "$1".repeat(10))
+  )
+  .replace(/`/g, "")
 
-  .replace(/n/g, "♞")
-  .replace(/N/g, "♘")
-
-  .replace(/p/g, "♟︎")
-  .replace(/P/g, "♙")
-
-  .replaceTemplate(templateRegExp`/${(n: number) => String(n)}/g`, template`${(n: number) => String(n - 1)}・`, range(8, 1))
-  .replace(/0/g, "")
+  // add file letters
+  .replace(/$/, "\n//abcdefgh")
 ;
 
 // ! doesn't support en passant or castling
